@@ -1,6 +1,7 @@
 package gg.grounds.api
 
 import com.google.protobuf.Timestamp
+import gg.grounds.auth.AuthGuard
 import gg.grounds.domain.LeaderboardRepository
 import gg.grounds.domain.SubmitOutcome
 import gg.grounds.grpc.leaderboard.GetPlayerRankReply
@@ -148,6 +149,12 @@ constructor(
         responseObserver: io.grpc.stub.StreamObserver<SeasonResetReply>,
     ) {
         try {
+            // Admin-only. Subject suffix `:platform-admin` or
+            // `:leaderboard-admin` passes; everyone else gets
+            // PERMISSION_DENIED. JWT validation already happened in
+            // GroundsAuthInterceptor, so AuthContext.current() is set
+            // when auth is enabled.
+            AuthGuard.requireAdmin("seasonReset")
             val boardId = requireNonEmpty(request.boardId, "board_id")
             val seasonId = requireNonEmpty(request.seasonId, "season_id")
             val newSeasonId = requireNonEmpty(request.newSeasonId, "new_season_id")
