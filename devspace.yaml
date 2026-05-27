@@ -1,0 +1,43 @@
+version: v2beta1
+name: service-leaderboard
+
+deployments:
+  app:
+    namespace: api
+    helm:
+      releaseName: service-leaderboard
+      chart:
+        name: oci://ghcr.io/groundsgg/charts/grounds-service
+        version: 0.1.0
+      values:
+        deployment:
+          image:
+            repository: ghcr.io/groundsgg/service-leaderboard
+            tag: edge
+          containerPort: 9000
+          env:
+            - name: POSTGRES_URL
+              value: jdbc:postgresql://postgresql.databases:5432/app?currentSchema=leaderboard
+        service:
+          enabled: true
+          port: 9000
+          targetPort: 9000
+
+dev:
+  app:
+    imageSelector: ghcr.io/groundsgg/service-leaderboard
+    devImage: gradle:9.2.1-jdk25
+    sync:
+      - path: ./
+        excludePaths:
+          - .gradle/
+          - build/
+      - path: ${HOME}/.gradle/gradle.properties:/tmp/gradle-user-home/gradle.properties
+        file: true
+    terminal:
+      command: |
+        export QUARKUS_ANALYTICS_DISABLED=true
+        export GRADLE_USER_HOME=/tmp/gradle-user-home
+        ./gradlew --console=plain quarkusDev
+    ports:
+      - port: "9000"
