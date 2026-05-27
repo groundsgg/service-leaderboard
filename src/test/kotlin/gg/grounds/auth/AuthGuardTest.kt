@@ -8,9 +8,7 @@ class AuthGuardTest {
 
     @Test
     fun `platform-admin subject is admin`() {
-        assertTrue(
-            AuthGuard.isAdminSubject("system:serviceaccount:platform-admin:platform-admin")
-        )
+        assertTrue(AuthGuard.isAdminSubject("system:serviceaccount:platform-admin:platform-admin"))
     }
 
     @Test
@@ -26,9 +24,7 @@ class AuthGuardTest {
     @Test
     fun `arbitrary plugin SA is not admin`() {
         assertFalse(
-            AuthGuard.isAdminSubject(
-                "system:serviceaccount:user-hendrik:sample-leaderboard-plugin"
-            )
+            AuthGuard.isAdminSubject("system:serviceaccount:user-hendrik:sample-leaderboard-plugin")
         )
     }
 
