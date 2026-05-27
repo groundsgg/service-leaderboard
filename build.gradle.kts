@@ -22,6 +22,10 @@ dependencies {
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-flyway")
     implementation("io.quarkus:quarkus-kotlin")
+    // JWT validation for incoming gRPC calls. SDK attaches the
+    // projected ServiceAccount token (aud=grounds-services); the
+    // interceptor reads + verifies it against k8s JWKS.
+    implementation("com.nimbusds:nimbus-jose-jwt:9.41.1")
     implementation("gg.grounds:library-grpc-contracts-leaderboard:main-SNAPSHOT")
 
     compileOnly("com.google.protobuf:protobuf-kotlin")
