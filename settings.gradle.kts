@@ -1,4 +1,4 @@
-rootProject.name = "service-player"
+rootProject.name = "service-leaderboard"
 
 pluginManagement {
     repositories {
