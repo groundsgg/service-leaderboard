@@ -1,5 +1,6 @@
 package gg.grounds.api
 
+import com.google.protobuf.Timestamp
 import gg.grounds.domain.LeaderboardRepository
 import gg.grounds.domain.SubmitOutcome
 import gg.grounds.grpc.leaderboard.GetPlayerRankReply
@@ -13,7 +14,6 @@ import gg.grounds.grpc.leaderboard.SeasonResetRequest
 import gg.grounds.grpc.leaderboard.SubmitMode
 import gg.grounds.grpc.leaderboard.SubmitScoreReply
 import gg.grounds.grpc.leaderboard.SubmitScoreRequest
-import com.google.protobuf.Timestamp
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.quarkus.grpc.GrpcService
@@ -23,16 +23,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
 
 /**
- * gRPC entry-point. Translates proto requests to repository calls;
- * the domain layer owns the actual ranking + idempotency semantics.
+ * gRPC entry-point. Translates proto requests to repository calls; the domain layer owns the actual
+ * ranking + idempotency semantics.
  */
 @GrpcService
 class LeaderboardGrpcService
 @Inject
 constructor(
     private val repo: LeaderboardRepository,
-    @param:ConfigProperty(name = "grounds.leaderboard.top.limit-cap")
-    private val topLimitCap: Int,
+    @param:ConfigProperty(name = "grounds.leaderboard.top.limit-cap") private val topLimitCap: Int,
 ) : LeaderboardServiceGrpc.LeaderboardServiceImplBase() {
 
     override fun submitScore(
@@ -46,27 +45,34 @@ constructor(
             val seasonId = request.seasonId.ifEmpty { repo.activeSeason(boardId) }
             val idempotencyKey = request.idempotencyKey.takeIf { it.isNotEmpty() }
 
-            val outcome: SubmitOutcome = repo.submitScore(
-                boardId = boardId,
-                seasonId = seasonId,
-                playerId = playerId,
-                score = request.score,
-                mode = mode,
-                idempotencyKey = idempotencyKey,
-            )
+            val outcome: SubmitOutcome =
+                repo.submitScore(
+                    boardId = boardId,
+                    seasonId = seasonId,
+                    playerId = playerId,
+                    score = request.score,
+                    mode = mode,
+                    idempotencyKey = idempotencyKey,
+                )
 
-            val reply = SubmitScoreReply.newBuilder()
-                .setEffectiveScore(outcome.effectiveScore)
-                .setRank(outcome.rank)
-                .setSeasonId(seasonId)
-                .setDeduplicated(outcome.deduplicated)
-                .build()
+            val reply =
+                SubmitScoreReply.newBuilder()
+                    .setEffectiveScore(outcome.effectiveScore)
+                    .setRank(outcome.rank)
+                    .setSeasonId(seasonId)
+                    .setDeduplicated(outcome.deduplicated)
+                    .build()
             responseObserver.onNext(reply)
             responseObserver.onCompleted()
         } catch (e: StatusRuntimeException) {
             responseObserver.onError(e)
         } catch (e: Exception) {
-            LOG.errorf(e, "submitScore failed (board=%s, player=%s)", request.boardId, request.playerId)
+            LOG.errorf(
+                e,
+                "submitScore failed (board=%s, player=%s)",
+                request.boardId,
+                request.playerId,
+            )
             responseObserver.onError(Status.INTERNAL.withDescription(e.message).asException())
         }
     }
@@ -77,19 +83,18 @@ constructor(
     ) {
         try {
             val boardId = requireNonEmpty(request.boardId, "board_id")
-            val limit = request.limit
-                .let { if (it <= 0) 100 else it }
-                .coerceAtMost(topLimitCap)
+            val limit = request.limit.let { if (it <= 0) 100 else it }.coerceAtMost(topLimitCap)
             val seasonId = request.seasonId.ifEmpty { repo.activeSeason(boardId) }
 
-            val entries = repo.getTop(boardId, seasonId, limit).map { e ->
-                LeaderboardEntry.newBuilder()
-                    .setRank(e.rank)
-                    .setPlayerId(e.playerId.toString())
-                    .setScore(e.score)
-                    .setLastUpdated(toProtoTimestamp(e.lastUpdatedEpochMs))
-                    .build()
-            }
+            val entries =
+                repo.getTop(boardId, seasonId, limit).map { e ->
+                    LeaderboardEntry.newBuilder()
+                        .setRank(e.rank)
+                        .setPlayerId(e.playerId.toString())
+                        .setScore(e.score)
+                        .setLastUpdated(toProtoTimestamp(e.lastUpdatedEpochMs))
+                        .build()
+                }
             responseObserver.onNext(
                 GetTopReply.newBuilder().addAllEntries(entries).setSeasonId(seasonId).build()
             )
@@ -112,25 +117,28 @@ constructor(
             val seasonId = request.seasonId.ifEmpty { repo.activeSeason(boardId) }
 
             val rank = repo.getPlayerRank(boardId, seasonId, playerId)
-            val reply = if (rank == null) {
-                GetPlayerRankReply.newBuilder()
-                    .setFound(false)
-                    .setSeasonId(seasonId)
-                    .build()
-            } else {
-                GetPlayerRankReply.newBuilder()
-                    .setFound(true)
-                    .setRank(rank.rank)
-                    .setScore(rank.score)
-                    .setSeasonId(seasonId)
-                    .build()
-            }
+            val reply =
+                if (rank == null) {
+                    GetPlayerRankReply.newBuilder().setFound(false).setSeasonId(seasonId).build()
+                } else {
+                    GetPlayerRankReply.newBuilder()
+                        .setFound(true)
+                        .setRank(rank.rank)
+                        .setScore(rank.score)
+                        .setSeasonId(seasonId)
+                        .build()
+                }
             responseObserver.onNext(reply)
             responseObserver.onCompleted()
         } catch (e: StatusRuntimeException) {
             responseObserver.onError(e)
         } catch (e: Exception) {
-            LOG.errorf(e, "getPlayerRank failed (board=%s, player=%s)", request.boardId, request.playerId)
+            LOG.errorf(
+                e,
+                "getPlayerRank failed (board=%s, player=%s)",
+                request.boardId,
+                request.playerId,
+            )
             responseObserver.onError(Status.INTERNAL.withDescription(e.message).asException())
         }
     }
@@ -160,29 +168,27 @@ constructor(
         }
     }
 
-    private fun parsePlayerId(raw: String): UUID = try {
-        UUID.fromString(requireNonEmpty(raw, "player_id"))
-    } catch (_: IllegalArgumentException) {
-        throw Status.INVALID_ARGUMENT
-            .withDescription("player_id must be a UUID")
-            .asRuntimeException()
-    }
+    private fun parsePlayerId(raw: String): UUID =
+        try {
+            UUID.fromString(requireNonEmpty(raw, "player_id"))
+        } catch (_: IllegalArgumentException) {
+            throw Status.INVALID_ARGUMENT.withDescription("player_id must be a UUID")
+                .asRuntimeException()
+        }
 
     private fun requireNonEmpty(value: String, field: String): String {
         if (value.isEmpty()) {
-            throw Status.INVALID_ARGUMENT
-                .withDescription("$field must not be empty")
+            throw Status.INVALID_ARGUMENT.withDescription("$field must not be empty")
                 .asRuntimeException()
         }
         return value
     }
 
     private fun requireKnownMode(mode: SubmitMode): SubmitMode {
-        if (mode == SubmitMode.SUBMIT_MODE_UNSPECIFIED ||
-            mode == SubmitMode.UNRECOGNIZED
-        ) {
-            throw Status.INVALID_ARGUMENT
-                .withDescription("mode must be REPLACE, ACCUMULATE, or MAX")
+        if (mode == SubmitMode.SUBMIT_MODE_UNSPECIFIED || mode == SubmitMode.UNRECOGNIZED) {
+            throw Status.INVALID_ARGUMENT.withDescription(
+                    "mode must be REPLACE, ACCUMULATE, or MAX"
+                )
                 .asRuntimeException()
         }
         return mode
