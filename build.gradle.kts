@@ -26,6 +26,10 @@ dependencies {
     // projected ServiceAccount token (aud=grounds-services); the
     // interceptor reads + verifies it against k8s JWKS.
     implementation("com.nimbusds:nimbus-jose-jwt:9.41.1")
+    // OpenTelemetry — server-side gRPC instrumentation + OTLP exporter
+    // to Alloy. Auto-wired via @WithSpan on @Blocking methods and the
+    // built-in gRPC server interceptor.
+    implementation("io.quarkus:quarkus-opentelemetry")
     implementation("gg.grounds:library-grpc-contracts-leaderboard:main-SNAPSHOT")
 
     compileOnly("com.google.protobuf:protobuf-kotlin")
