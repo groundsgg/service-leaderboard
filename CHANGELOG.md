@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/groundsgg/service-leaderboard/compare/v1.0.0...v1.1.0) (2026-05-28)
+
+
+### Features
+
+* **otel:** server-side traces to Alloy ([#8](https://github.com/groundsgg/service-leaderboard/issues/8)) ([6c163de](https://github.com/groundsgg/service-leaderboard/commit/6c163de8ea28e47855a724e166e951ec8623a2c6))
+
 ## 1.0.0 (2026-05-27)
 
 
