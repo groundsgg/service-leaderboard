@@ -30,6 +30,8 @@ dependencies {
     // to Alloy. Auto-wired via @WithSpan on @Blocking methods and the
     // built-in gRPC server interceptor.
     implementation("io.quarkus:quarkus-opentelemetry")
+    // Prometheus metrics on /q/metrics — JVM, HTTP and the Agroal pool.
+    implementation("io.quarkus:quarkus-micrometer-registry-prometheus")
     implementation("gg.grounds:library-grpc-contracts-leaderboard:main-SNAPSHOT")
 
     compileOnly("com.google.protobuf:protobuf-kotlin")
