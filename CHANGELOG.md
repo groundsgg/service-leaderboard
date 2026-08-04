@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/groundsgg/service-leaderboard/compare/v1.1.0...v1.2.0) (2026-08-04)
+
+
+### Features
+
+* **metrics:** expose JVM, HTTP and connection-pool metrics ([#13](https://github.com/groundsgg/service-leaderboard/issues/13)) ([c9caeda](https://github.com/groundsgg/service-leaderboard/commit/c9caedaa9addaf21c9c63e4b554aefede8ddf8fe))
+
+
+### Bug Fixes
+
+* **auth:** JWKS fetch trusts cluster CA + sends SA-bearer (OVH-MKS) ([#11](https://github.com/groundsgg/service-leaderboard/issues/11)) ([8302fce](https://github.com/groundsgg/service-leaderboard/commit/8302fce6f71ffed6fa4dea1a5946394cf2060649))
+
 ## [1.1.0](https://github.com/groundsgg/service-leaderboard/compare/v1.0.0...v1.1.0) (2026-05-28)
 
 
