@@ -3,6 +3,7 @@ package gg.grounds.api
 import com.google.protobuf.Timestamp
 import gg.grounds.auth.AuthGuard
 import gg.grounds.domain.LeaderboardRepository
+import gg.grounds.domain.SubmitMode as DomainSubmitMode
 import gg.grounds.domain.SubmitOutcome
 import gg.grounds.grpc.leaderboard.GetPlayerRankReply
 import gg.grounds.grpc.leaderboard.GetPlayerRankRequest
@@ -191,15 +192,18 @@ constructor(
         return value
     }
 
-    private fun requireKnownMode(mode: SubmitMode): SubmitMode {
-        if (mode == SubmitMode.SUBMIT_MODE_UNSPECIFIED || mode == SubmitMode.UNRECOGNIZED) {
-            throw Status.INVALID_ARGUMENT.withDescription(
-                    "mode must be REPLACE, ACCUMULATE, or MAX"
-                )
-                .asRuntimeException()
+    private fun requireKnownMode(mode: SubmitMode): DomainSubmitMode =
+        when (mode) {
+            SubmitMode.SUBMIT_MODE_REPLACE -> DomainSubmitMode.REPLACE
+            SubmitMode.SUBMIT_MODE_ACCUMULATE -> DomainSubmitMode.ACCUMULATE
+            SubmitMode.SUBMIT_MODE_MAX -> DomainSubmitMode.MAX
+            SubmitMode.SUBMIT_MODE_UNSPECIFIED,
+            SubmitMode.UNRECOGNIZED ->
+                throw Status.INVALID_ARGUMENT.withDescription(
+                        "mode must be REPLACE, ACCUMULATE, or MAX"
+                    )
+                    .asRuntimeException()
         }
-        return mode
-    }
 
     private fun toProtoTimestamp(epochMs: Long): Timestamp {
         val secs = epochMs / 1000

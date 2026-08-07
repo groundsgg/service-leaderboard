@@ -1,12 +1,11 @@
 package gg.grounds.domain
 
-import gg.grounds.grpc.leaderboard.SubmitMode
 import java.util.UUID
 
 /**
  * Domain port. Implementation in `persistence` package backs this with Postgres; tests can swap a
- * fake. Idempotency, season-resolution and rank-computation all happen below this interface so the
- * gRPC layer stays a thin translator.
+ * fake. Idempotency, season-resolution and rank-computation all happen below this interface so each
+ * transport adapter stays a thin translator.
  */
 interface LeaderboardRepository {
 
