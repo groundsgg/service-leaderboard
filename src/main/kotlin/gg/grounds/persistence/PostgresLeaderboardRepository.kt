@@ -3,9 +3,9 @@ package gg.grounds.persistence
 import gg.grounds.domain.LeaderboardRepository
 import gg.grounds.domain.PlayerRank
 import gg.grounds.domain.SeasonResetResult
+import gg.grounds.domain.SubmitMode
 import gg.grounds.domain.SubmitOutcome
 import gg.grounds.domain.TopEntry
-import gg.grounds.grpc.leaderboard.SubmitMode
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import java.sql.Connection
@@ -201,7 +201,7 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
     ): Long {
         val sql =
             when (mode) {
-                SubmitMode.SUBMIT_MODE_REPLACE ->
+                SubmitMode.REPLACE ->
                     """
                 INSERT INTO leaderboard_entries (board_id, season_id, player_id, score, last_updated)
                 VALUES (?, ?, ?, ?, NOW())
@@ -209,7 +209,7 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
                 SET score = EXCLUDED.score, last_updated = NOW()
                 RETURNING score
             """
-                SubmitMode.SUBMIT_MODE_ACCUMULATE ->
+                SubmitMode.ACCUMULATE ->
                     """
                 INSERT INTO leaderboard_entries (board_id, season_id, player_id, score, last_updated)
                 VALUES (?, ?, ?, ?, NOW())
@@ -217,7 +217,7 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
                 SET score = leaderboard_entries.score + EXCLUDED.score, last_updated = NOW()
                 RETURNING score
             """
-                SubmitMode.SUBMIT_MODE_MAX ->
+                SubmitMode.MAX ->
                     """
                 INSERT INTO leaderboard_entries (board_id, season_id, player_id, score, last_updated)
                 VALUES (?, ?, ?, ?, NOW())
@@ -226,7 +226,6 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
                     last_updated = CASE WHEN EXCLUDED.score > leaderboard_entries.score THEN NOW() ELSE leaderboard_entries.last_updated END
                 RETURNING score
             """
-                else -> error("unreachable — guarded at the gRPC layer")
             }
         return c.prepareStatement(sql.trimIndent()).use { ps ->
             ps.setString(1, boardId)
