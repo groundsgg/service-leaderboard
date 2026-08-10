@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.30.8"))
+    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.36.0"))
     implementation("io.quarkus:quarkus-arc")
     // The public API. HTTP is the only transport.
     implementation("io.quarkus:quarkus-rest")
