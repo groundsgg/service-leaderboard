@@ -21,21 +21,10 @@ Callers authenticate with the projected workload token from
 cluster's JWKS with the `grounds-services` audience. A season reset additionally
 requires an admin ServiceAccount (`:platform-admin` or `:leaderboard-admin`).
 
-### Retiring gRPC
-
-The `LeaderboardService` gRPC contract is still served on the same port, because
-`service-match` and `plugin-match` still dial the stubs. That adapter holds no
-rules of its own — both transports call the same `LeaderboardRepository` — so it
-can be deleted once no caller needs it. The order matters:
-
-1. Release this service. It now answers on both transports.
-2. Move `service-match` and `plugin-match` to HTTP, and roll the proxies.
-3. Delete `gg.grounds.api`, `GroundsAuthInterceptor`, `AuthContext`, the
-   `quarkus-grpc` dependency and the `library-grpc-contracts-leaderboard`
-   dependency.
-
-Doing 3 before 2 stops every rated match from reaching a board, silently: the
-submit is best-effort by design and its caller swallows the failure.
+HTTP is the only transport. The `LeaderboardService` gRPC adapter was removed
+once service-match 1.0.0 and plugin-match 0.7.0 had moved to REST; the rules it
+wrapped always lived in `LeaderboardRepository`, which the REST resource calls
+directly.
 
 ## Development
 
