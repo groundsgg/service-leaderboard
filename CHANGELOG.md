@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/groundsgg/service-leaderboard/compare/v1.2.0...v1.3.0) (2026-08-07)
+
+
+### Features
+
+* **api:** serve the leaderboard over REST alongside gRPC ([#14](https://github.com/groundsgg/service-leaderboard/issues/14)) ([bb37cd9](https://github.com/groundsgg/service-leaderboard/commit/bb37cd9de99c1dcb540919d0f191173ba4a9d722))
+
 ## [1.2.0](https://github.com/groundsgg/service-leaderboard/compare/v1.1.0...v1.2.0) (2026-08-04)
 
 
