@@ -1,7 +1,5 @@
 package gg.grounds.auth
 
-import io.grpc.Status
-
 /**
  * Method-ACL decisions live here. Hard-coded today because the v2.2 Service Architecture spec calls
  * for server-side hard-coded Method-ACL — central config or a Keycloak-role lookup is YAGNI until
@@ -17,34 +15,8 @@ object AuthGuard {
     private val ADMIN_SA_SUFFIXES = listOf(":platform-admin", ":leaderboard-admin")
 
     /**
-     * Returns true if the current caller's JWT `sub` matches any configured admin SA. False when:
-     * - Auth is disabled (dev mode)
-     * - No claims present (shouldn't happen post-interceptor)
-     * - Subject doesn't match an admin pattern
-     */
-    fun isAdmin(): Boolean {
-        val claims = AuthContext.current() ?: return false
-        return ADMIN_SA_SUFFIXES.any { suffix -> claims.subject.endsWith(suffix) }
-    }
-
-    /**
-     * Throw PERMISSION_DENIED if the current caller is not an admin. For service code to call at
-     * the top of an admin-only handler.
-     */
-    fun requireAdmin(operation: String) {
-        if (!isAdmin()) {
-            val sub = AuthContext.current()?.subject ?: "<no-auth>"
-            throw Status.PERMISSION_DENIED.withDescription(
-                    "$operation requires admin (caller=$sub)"
-                )
-                .asRuntimeException()
-        }
-    }
-
-    /**
-     * The decision itself, taking the subject rather than reading it out of a transport. This is
-     * what the HTTP layer asks, holding the caller's identity from its own SecurityContext; the
-     * gRPC helpers above are the same question asked through a gRPC Context.
+     * The decision, taking the subject rather than reading it out of a transport. The HTTP layer
+     * asks this holding the caller's identity from the request's SecurityContext.
      */
     fun isAdminSubject(subject: String): Boolean = ADMIN_SA_SUFFIXES.any { subject.endsWith(it) }
 }

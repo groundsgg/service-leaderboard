@@ -49,17 +49,13 @@ repositories {
 dependencies {
     implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.30.8"))
     implementation("io.quarkus:quarkus-arc")
-    // The public API. gRPC is still served alongside it while the callers
-    // migrate — service-match and plugin-match both still dial the stubs, and
-    // `quarkus.grpc.server.use-separate-server=false` puts both on 9000, so
-    // serving them together needs no chart, Service or scrape change.
+    // The public API. HTTP is the only transport.
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
     implementation("io.quarkus:quarkus-smallrye-openapi")
     // Kotlin data classes as request bodies: without this module Jackson cannot
     // see constructor parameter names, so every field arrives null.
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-flyway")
     implementation("io.quarkus:quarkus-kotlin")
@@ -71,9 +67,6 @@ dependencies {
     implementation("io.quarkus:quarkus-opentelemetry")
     // Prometheus metrics on /q/metrics — JVM, HTTP and the Agroal pool.
     implementation("io.quarkus:quarkus-micrometer-registry-prometheus")
-    implementation("gg.grounds:library-grpc-contracts-leaderboard:main-SNAPSHOT")
-
-    compileOnly("com.google.protobuf:protobuf-kotlin")
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.quarkus:quarkus-junit5-mockito")
@@ -82,12 +75,3 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:1.21.5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.5")
 }
-
-sourceSets { main { java { srcDirs("build/classes/java/quarkus-generated-sources/grpc") } } }
-
-tasks
-    .matching { it.name == "kaptGenerateStubsKotlin" }
-    .configureEach {
-        dependsOn("quarkusGenerateCode")
-        dependsOn("quarkusGenerateCodeDev")
-    }
