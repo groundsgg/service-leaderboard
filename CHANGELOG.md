@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/groundsgg/service-leaderboard/compare/v1.3.0...v2.0.0) (2026-08-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** drop the LeaderboardService gRPC adapter ([#16](https://github.com/groundsgg/service-leaderboard/issues/16))
+
+### Features
+
+* **api:** drop the LeaderboardService gRPC adapter ([#16](https://github.com/groundsgg/service-leaderboard/issues/16)) ([fe511ae](https://github.com/groundsgg/service-leaderboard/commit/fe511aefa42eba07ba3f065885c876f76d6cf9e1))
+
 ## [1.3.0](https://github.com/groundsgg/service-leaderboard/compare/v1.2.0...v1.3.0) (2026-08-07)
 
 
