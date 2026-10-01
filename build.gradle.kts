@@ -62,7 +62,7 @@ dependencies {
     // JWT validation for incoming calls. Callers attach the projected
     // ServiceAccount token (aud=grounds-services); WorkloadAuthenticator
     // verifies it against the cluster JWKS for both transports.
-    implementation("com.nimbusds:nimbus-jose-jwt:9.41.1")
+    implementation("com.nimbusds:nimbus-jose-jwt:10.10")
     // OpenTelemetry — server-side instrumentation + OTLP exporter to Alloy.
     implementation("io.quarkus:quarkus-opentelemetry")
     // Prometheus metrics on /q/metrics — JVM, HTTP and the Agroal pool.
