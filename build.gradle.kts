@@ -1,6 +1,6 @@
 plugins {
     id("gg.grounds.root") version "0.1.1"
-    id("io.quarkus") version "3.30.6"
+    alias(libs.plugins.quarkus)
 }
 
 // The OpenAPI snapshot published to groundsgg/api-reference. Quarkus only writes
@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    implementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.30.8"))
+    implementation(enforcedPlatform(libs.quarkus.bom))
     implementation("io.quarkus:quarkus-arc")
     // The public API. HTTP is the only transport.
     implementation("io.quarkus:quarkus-rest")
