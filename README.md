@@ -21,10 +21,23 @@ Callers authenticate with the projected workload token from
 cluster's JWKS with the `grounds-services` audience. A season reset additionally
 requires an admin ServiceAccount (`:platform-admin` or `:leaderboard-admin`).
 
-HTTP is the only transport. The `LeaderboardService` gRPC adapter was removed
-once service-match 1.0.0 and plugin-match 0.7.0 had moved to REST; the rules it
-wrapped always lived in `LeaderboardRepository`, which the REST resource calls
-directly.
+The `LeaderboardService` gRPC adapter was removed once service-match 1.0.0 and
+plugin-match 0.7.0 had moved to REST; the rules it wrapped always lived in
+`LeaderboardRepository`, which the REST resource calls directly.
+
+## Score stream
+
+Submissions nobody waits on (service-match's rated results) can also arrive on
+the `LEADERBOARD_SCORES` JetStream stream as `leaderboard.score.submitted.<boardId>`,
+with the same JSON body as `POST /v1/leaderboards/{boardId}/scores`. The
+`leaderboard-writer` durable applies them through the same code path, one at a
+time and in order. Every message must carry an `idempotencyKey`; redeliveries
+deduplicate in the database. Off unless `LEADERBOARD_CONSUMER_ENABLED=true`; the
+stream and the NATS user (credentials in `NATS_URL`) come from grounds-pulumi.
+
+Idempotency keys are remembered for `LEADERBOARD_IDEMPOTENCY_WINDOW` (8 days,
+longer than the stream keeps messages) once `LEADERBOARD_IDEMPOTENCY_PRUNE_ENABLED=true`;
+until then they are kept forever.
 
 ## Development
 

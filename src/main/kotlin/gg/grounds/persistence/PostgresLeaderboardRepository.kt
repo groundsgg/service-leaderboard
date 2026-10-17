@@ -38,27 +38,29 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
         mode: SubmitMode,
         idempotencyKey: String?,
     ): SubmitOutcome {
-        // Idempotency: if we've seen this key within the window, return
-        // the prior outcome. Lookup happens before the score-write so
-        // a successful dedup never touches the leaderboard table.
-        if (idempotencyKey != null) {
-            dataSource.connection.use { c ->
-                lookupIdempotency(c, idempotencyKey)?.let { prior ->
-                    return SubmitOutcome(
-                        effectiveScore = prior,
-                        rank = computeRank(c, boardId, seasonId, prior),
-                        deduplicated = true,
-                    )
-                }
-            }
-        }
-
         return dataSource.connection.use { c ->
             c.autoCommit = false
             try {
+                // Idempotency: claim the key first, in the same transaction as the write. A
+                // concurrent submit with the same key blocks on the primary key until this one
+                // commits and then claims nothing, so two deliveries of one event (the HTTP path
+                // and the stream consumer, or two consumer replicas) can never both apply it. A
+                // read-then-insert check could not promise that.
+                if (
+                    idempotencyKey != null &&
+                        !claimIdempotency(c, idempotencyKey, boardId, playerId)
+                ) {
+                    c.rollback()
+                    val prior =
+                        lookupIdempotency(c, idempotencyKey)
+                            ?: error("idempotency key $idempotencyKey vanished after a conflict")
+                    val rank = computeRank(c, boardId, seasonId, prior)
+                    c.commit()
+                    return@use SubmitOutcome(prior, rank, deduplicated = true)
+                }
                 val effective = applyMode(c, boardId, seasonId, playerId, score, mode)
                 if (idempotencyKey != null) {
-                    recordIdempotency(c, idempotencyKey, boardId, playerId, effective)
+                    recordEffectiveScore(c, idempotencyKey, effective)
                 }
                 val rank = computeRank(c, boardId, seasonId, effective)
                 c.commit()
@@ -259,17 +261,12 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
                 ps.executeQuery().use { rs -> if (rs.next()) rs.getLong(1) else null }
             }
 
-    private fun recordIdempotency(
-        c: Connection,
-        key: String,
-        boardId: String,
-        playerId: UUID,
-        effectiveScore: Long,
-    ) {
+    /** True when this transaction now owns [key]; false when an earlier submit already did. */
+    private fun claimIdempotency(c: Connection, key: String, boardId: String, playerId: UUID) =
         c.prepareStatement(
                 """
                 INSERT INTO leaderboard_submit_idempotency (idempotency_key, board_id, player_id, effective_score)
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, 0)
                 ON CONFLICT (idempotency_key) DO NOTHING
                 """
                     .trimIndent()
@@ -278,7 +275,16 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
                 ps.setString(1, key)
                 ps.setString(2, boardId)
                 ps.setObject(3, playerId)
-                ps.setLong(4, effectiveScore)
+                ps.executeUpdate() == 1
+            }
+
+    private fun recordEffectiveScore(c: Connection, key: String, effectiveScore: Long) {
+        c.prepareStatement(
+                "UPDATE leaderboard_submit_idempotency SET effective_score = ? WHERE idempotency_key = ?"
+            )
+            .use { ps ->
+                ps.setLong(1, effectiveScore)
+                ps.setString(2, key)
                 ps.executeUpdate()
             }
     }

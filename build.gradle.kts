@@ -67,6 +67,11 @@ dependencies {
     implementation("io.quarkus:quarkus-opentelemetry")
     // Prometheus metrics on /q/metrics — JVM, HTTP and the Agroal pool.
     implementation("io.quarkus:quarkus-micrometer-registry-prometheus")
+    // The score stream (LEADERBOARD_SCORES): a JetStream pull consumer for
+    // submissions nobody waits on, polled by the scheduler. The scheduler also
+    // runs the idempotency-ledger pruner.
+    implementation("io.nats:jnats:2.26.4")
+    implementation("io.quarkus:quarkus-scheduler")
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.quarkus:quarkus-junit5-mockito")
@@ -74,4 +79,10 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
     testImplementation("org.testcontainers:postgresql:1.21.5")
     testImplementation("org.testcontainers:junit-jupiter:1.21.5")
+}
+
+tasks.test {
+    // Testcontainers' docker-java negotiates API 1.32 by default, which a modern
+    // daemon refuses ("client version 1.32 is too old"). Same fix as service-match.
+    systemProperty("api.version", System.getenv("DOCKER_API_VERSION") ?: "1.44")
 }
