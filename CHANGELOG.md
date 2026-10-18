@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/groundsgg/service-leaderboard/compare/v2.1.0...v2.2.0) (2026-10-18)
+
+
+### Features
+
+* apply scores from the LEADERBOARD_SCORES stream ([#31](https://github.com/groundsgg/service-leaderboard/issues/31)) ([8997b47](https://github.com/groundsgg/service-leaderboard/commit/8997b4750ace65672c3617b8aaecd38ae1256cc1))
+
 ## [2.1.0](https://github.com/groundsgg/service-leaderboard/compare/v2.0.0...v2.1.0) (2026-10-17)
 
 
