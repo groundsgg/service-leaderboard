@@ -81,11 +81,32 @@ constructor(
                     LOG.warnf(error, "Fetch failed on %s, resubscribing", stream)
                     subscription = null
                     return handled
-                } ?: return handled
+                } ?: break
             process(message)
             handled++
         }
+        if (handled == 0) verifyConsumer()
         return handled
+    }
+
+    /**
+     * An idle poll checks the durable still exists. A pull from a consumer that was deleted (the
+     * stream recreated, an operator's `nats consumer rm`) just returns nothing, so without this the
+     * consumer would sit idle forever while scores pile up.
+     */
+    private fun verifyConsumer() {
+        try {
+            // Asked of the server, not of the subscription, which may answer from its cache.
+            checkNotNull(nats.connection()).jetStreamManagement().getConsumerInfo(stream, durable)
+        } catch (error: Exception) {
+            LOG.warnf(
+                "Consumer %s on %s is gone, resubscribing: %s",
+                durable,
+                stream,
+                error.message,
+            )
+            subscription = null
+        }
     }
 
     private fun process(message: Message) {
