@@ -1,6 +1,8 @@
 package gg.grounds.rest
 
+import gg.grounds.domain.BoardSummary
 import gg.grounds.domain.LeaderboardRepository
+import gg.grounds.domain.PlayerBoard
 import gg.grounds.domain.PlayerRank
 import gg.grounds.domain.SeasonResetResult
 import gg.grounds.domain.SubmitMode
@@ -246,6 +248,10 @@ class LeaderboardResourceTest {
 
         override fun getPlayerRank(boardId: String, seasonId: String, playerId: UUID): PlayerRank? =
             playerRank
+
+        override fun getPlayerBoards(playerId: UUID, seasonId: String?) = emptyList<PlayerBoard>()
+
+        override fun listBoards() = emptyList<BoardSummary>()
 
         override fun seasonReset(
             boardId: String,

@@ -102,3 +102,30 @@ data class SeasonResetResponse(
     @get:Schema(description = "How many entries were archived out of the live board.")
     val archivedEntries: Int,
 )
+
+@Schema(name = "PlayerBoard", description = "One player's standing on one board.")
+data class PlayerBoardResponse(
+    @get:Schema(description = "The board.", examples = ["bedwars-solo"]) val boardId: String,
+    @get:Schema(description = "The season this standing belongs to.") val seasonId: String,
+    @get:Schema(description = "1-indexed rank; players with the same score share one.")
+    val rank: Int,
+    @get:Schema(description = "The player's score.") val score: Long,
+)
+
+@Schema(name = "PlayerBoardsResponse", description = "Every board one player is on.")
+data class PlayerBoardsResponse(
+    @get:Schema(description = "Sorted by board id. Empty when the player never scored.")
+    val boards: List<PlayerBoardResponse>
+)
+
+@Schema(name = "BoardSummary", description = "One board in its active season.")
+data class BoardSummaryResponse(
+    @get:Schema(description = "The board.", examples = ["bedwars-solo"]) val boardId: String,
+    @get:Schema(description = "The board's active season.") val seasonId: String,
+    @get:Schema(description = "How many players have an entry in that season.") val players: Int,
+)
+
+@Schema(name = "BoardsResponse", description = "Every board with entries in its active season.")
+data class BoardsResponse(
+    @get:Schema(description = "Sorted by board id.") val boards: List<BoardSummaryResponse>
+)
