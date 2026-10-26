@@ -51,7 +51,7 @@ object TestInfra {
     }
 
     private fun migrations(): List<String> =
-        listOf("V1__create_leaderboard.sql").map { name ->
+        listOf("V1__create_leaderboard.sql", "V2__leaderboard_entries_player_idx.sql").map { name ->
             TestInfra::class.java.getResource("/db/migration/$name")!!.readText()
         }
 }

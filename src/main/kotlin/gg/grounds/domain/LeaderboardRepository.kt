@@ -42,6 +42,15 @@ interface LeaderboardRepository {
     fun getPlayerRank(boardId: String, seasonId: String, playerId: UUID): PlayerRank?
 
     /**
+     * Every board [playerId] has an entry on, with rank and score. Each board is read in its own
+     * active season unless [seasonId] pins one season for all of them. Sorted by board id.
+     */
+    fun getPlayerBoards(playerId: UUID, seasonId: String?): List<PlayerBoard>
+
+    /** Every board with at least one entry in its active season, with how many players it ranks. */
+    fun listBoards(): List<BoardSummary>
+
+    /**
      * Roll the active season forward. Idempotent: if [closingSeasonId] is already closed (active
      * season != closingSeasonId), returns `closed=false` without touching state.
      */
@@ -62,5 +71,9 @@ data class TopEntry(
 )
 
 data class PlayerRank(val rank: Int, val score: Long)
+
+data class PlayerBoard(val boardId: String, val seasonId: String, val rank: Int, val score: Long)
+
+data class BoardSummary(val boardId: String, val seasonId: String, val players: Int)
 
 data class SeasonResetResult(val closed: Boolean, val archivedEntries: Int)

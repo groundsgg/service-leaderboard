@@ -1,6 +1,8 @@
 package gg.grounds.persistence
 
+import gg.grounds.domain.BoardSummary
 import gg.grounds.domain.LeaderboardRepository
+import gg.grounds.domain.PlayerBoard
 import gg.grounds.domain.PlayerRank
 import gg.grounds.domain.SeasonResetResult
 import gg.grounds.domain.SubmitMode
@@ -129,6 +131,73 @@ class PostgresLeaderboardRepository @Inject constructor(private val dataSource: 
 
             val rank = computeRank(c, boardId, seasonId, score)
             PlayerRank(rank = rank, score = score)
+        }
+
+    override fun getPlayerBoards(playerId: UUID, seasonId: String?): List<PlayerBoard> =
+        dataSource.connection.use { c ->
+            // Rank as in getPlayerRank (ties share a rank), one correlated count per board the
+            // player is on. A player is on a handful of boards, each count an index range scan.
+            c.prepareStatement(
+                    """
+                    SELECT e.board_id, e.season_id, e.score,
+                           (SELECT COUNT(*) + 1 FROM leaderboard_entries o
+                            WHERE o.board_id = e.board_id AND o.season_id = e.season_id
+                              AND o.score > e.score) AS rank
+                    FROM leaderboard_entries e
+                    LEFT JOIN leaderboard_active_seasons a ON a.board_id = e.board_id
+                    WHERE e.player_id = ? AND e.season_id = COALESCE(?, a.season_id, '$DEFAULT_SEASON')
+                    ORDER BY e.board_id
+                    """
+                        .trimIndent()
+                )
+                .use { ps ->
+                    ps.setObject(1, playerId)
+                    ps.setString(2, seasonId)
+                    ps.executeQuery().use { rs ->
+                        buildList {
+                            while (rs.next()) {
+                                add(
+                                    PlayerBoard(
+                                        boardId = rs.getString("board_id"),
+                                        seasonId = rs.getString("season_id"),
+                                        rank = rs.getInt("rank"),
+                                        score = rs.getLong("score"),
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+        }
+
+    override fun listBoards(): List<BoardSummary> =
+        dataSource.connection.use { c ->
+            c.prepareStatement(
+                    """
+                    SELECT e.board_id, e.season_id, COUNT(*) AS players
+                    FROM leaderboard_entries e
+                    LEFT JOIN leaderboard_active_seasons a ON a.board_id = e.board_id
+                    WHERE e.season_id = COALESCE(a.season_id, '$DEFAULT_SEASON')
+                    GROUP BY e.board_id, e.season_id
+                    ORDER BY e.board_id
+                    """
+                        .trimIndent()
+                )
+                .use { ps ->
+                    ps.executeQuery().use { rs ->
+                        buildList {
+                            while (rs.next()) {
+                                add(
+                                    BoardSummary(
+                                        boardId = rs.getString("board_id"),
+                                        seasonId = rs.getString("season_id"),
+                                        players = rs.getInt("players"),
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
         }
 
     override fun seasonReset(
