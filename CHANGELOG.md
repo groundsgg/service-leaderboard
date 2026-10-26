@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/groundsgg/service-leaderboard/compare/v2.2.0...v2.3.0) (2026-10-26)
+
+
+### Features
+
+* read every board of one player and list the boards ([#34](https://github.com/groundsgg/service-leaderboard/issues/34)) ([e8d0b67](https://github.com/groundsgg/service-leaderboard/commit/e8d0b67ce7d7a737f548934639cc424ca995462f))
+
 ## [2.2.0](https://github.com/groundsgg/service-leaderboard/compare/v2.1.0...v2.2.0) (2026-10-18)
 
 
