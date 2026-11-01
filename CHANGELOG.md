@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/groundsgg/service-leaderboard/compare/v2.3.0...v2.4.0) (2026-11-01)
+
+
+### Features
+
+* **leaderboard:** add portable native runtime and reusable CI ([#36](https://github.com/groundsgg/service-leaderboard/issues/36)) ([ba9a650](https://github.com/groundsgg/service-leaderboard/commit/ba9a6500008d73f2be2838be5a0ca0b94a013e98))
+
 ## [2.3.0](https://github.com/groundsgg/service-leaderboard/compare/v2.2.0...v2.3.0) (2026-10-26)
 
 
