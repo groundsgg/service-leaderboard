@@ -13,8 +13,8 @@ RUN --mount=type=cache,target=/root/.gradle/caches,sharing=locked \
     /bin/sh -euc '\
       : "${GITHUB_USER:?GITHUB_USER is required}"; \
       umask 077; \
-      trap 'rm -f /root/.gradle/gradle.properties' EXIT; \
-      printf 'github.token=%s\n' "$(cat /run/secrets/github_token)" > /root/.gradle/gradle.properties; \
+      trap "rm -f /root/.gradle/gradle.properties" EXIT; \
+      printf "github.token=%s\n" "$(cat /run/secrets/github_token)" > /root/.gradle/gradle.properties; \
       ./gradlew --no-daemon \
         -Pgithub.user="${GITHUB_USER}" \
         -Pkotlin.compiler.execution.strategy=in-process \
