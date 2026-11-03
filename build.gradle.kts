@@ -1,4 +1,7 @@
 plugins {
+    // Match the Kotlin compiler to the libraries enforced by the Quarkus BOM.
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt)
     id("gg.grounds.root") version "0.1.1"
     alias(libs.plugins.quarkus)
 }
@@ -77,8 +80,8 @@ dependencies {
     testImplementation("io.quarkus:quarkus-junit5-mockito")
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.4.0")
-    testImplementation("org.testcontainers:postgresql:1.21.5")
-    testImplementation("org.testcontainers:junit-jupiter:1.21.5")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.testcontainers:testcontainers")
 }
 
 tasks.test {

@@ -3,8 +3,8 @@ package gg.grounds.support
 import java.sql.DriverManager
 import org.postgresql.ds.PGSimpleDataSource
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.postgresql.PostgreSQLContainer
 
 /**
  * A real Postgres and a real JetStream broker for the integration tests.
@@ -17,7 +17,7 @@ object TestInfra {
 
     val postgresUrl: String by lazy {
         System.getenv("TEST_POSTGRES_URL")
-            ?: PostgreSQLContainer<Nothing>("postgres:17-alpine").run {
+            ?: PostgreSQLContainer("postgres:17-alpine").run {
                 start()
                 "$jdbcUrl&user=$username&password=$password"
             }
