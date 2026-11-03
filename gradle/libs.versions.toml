@@ -2,9 +2,12 @@
 # so the Gradle plugin and the BOM cannot drift apart.
 [versions]
 quarkus = "3.40.1.1"
+kotlin = "2.4.10"
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 
 [libraries]
 quarkus-bom = { module = "io.quarkus.platform:quarkus-bom", version.ref = "quarkus" }
