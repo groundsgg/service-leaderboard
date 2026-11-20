@@ -73,7 +73,7 @@ dependencies {
     // The score stream (LEADERBOARD_SCORES): a JetStream pull consumer for
     // submissions nobody waits on, polled by the scheduler. The scheduler also
     // runs the idempotency-ledger pruner.
-    implementation("io.nats:jnats:2.26.4")
+    implementation("io.nats:jnats:2.27.0")
     implementation("io.quarkus:quarkus-scheduler")
 
     testImplementation("io.quarkus:quarkus-junit5")
